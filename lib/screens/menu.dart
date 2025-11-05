@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:football_news/widgets/left_drawer.dart';
+import 'package:football_news/screens/newslist_form.dart';
 
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
 
-  final String nama = "Bagas Prasetyo"; // Name
-  final String npm = "2406453423"; // NPM
-  final String kelas = "KKI"; // Class
+  final String nama = "Bagas Prasetyo";
+  final String npm = "2406453423";
+  final String kelas = "KKI";
 
   final List<ItemHomepage> items = [
     ItemHomepage("See Football News", Icons.newspaper),
@@ -26,6 +28,7 @@ class MyHomePage extends StatelessWidget {
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
+      drawer: const LeftDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -54,7 +57,7 @@ class MyHomePage extends StatelessWidget {
                     ),
                   ),
                   GridView.count(
-                    primary: false, // changed from true
+                    primary: false,
                     padding: const EdgeInsets.all(20),
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
@@ -121,11 +124,31 @@ class ItemCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () {
+          // Feedback
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
               SnackBar(content: Text("Kamu telah menekan tombol ${item.name}!")),
             );
+
+          // Navigation per button
+          if (item.name == "Add News") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NewsFormPage()),
+            );
+          } else if (item.name == "See Football News") {
+            // For now, stay or return to Home
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => MyHomePage()),
+            );
+          } else if (item.name == "Logout") {
+            // Stub: implement real logout later
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Logout clicked (not implemented)")),
+            );
+          }
         },
         child: Container(
           padding: const EdgeInsets.all(8),
@@ -133,11 +156,7 @@ class ItemCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  item.icon,
-                  color: Colors.white,
-                  size: 30.0,
-                ),
+                Icon(item.icon, color: Colors.white, size: 30.0),
                 const Padding(padding: EdgeInsets.all(3)),
                 Text(
                   item.name,
