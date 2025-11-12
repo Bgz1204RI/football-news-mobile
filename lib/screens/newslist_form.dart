@@ -1,3 +1,8 @@
+// ignore_for_file: deprecated_member_use
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:football_news/screens/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:football_news/widgets/left_drawer.dart';
 
@@ -29,6 +34,7 @@ class _NewsFormPageState extends State<NewsFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
         title: const Center(child: Text('Add News Form')),
@@ -163,49 +169,43 @@ class _NewsFormPageState extends State<NewsFormPage> {
                       backgroundColor:
                           MaterialStateProperty.all(Colors.indigo),
                     ),
-                    onPressed: () {
+
+                    // ✅ UPDATED LOGIC: Send data to Django backend
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title:
-                                  const Text('News saved successfully!'),
-                              content: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Title: $_title'),
-                                    Text('Content: $_content'),
-                                    Text('Category: $_category'),
-                                    Text('Thumbnail: $_thumbnail'),
-                                    Text(
-                                      'Featured: ${_isFeatured ? "Yes" : "No"}',
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  child: const Text('OK'),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              ],
-                            );
-                          },
+                        // Replace this with your backend URL
+                        // Android Emulator → http://10.0.2.2:8000/create-flutter/
+                        // Chrome/Web → http://localhost:8000/create-flutter/
+                        final response = await request.postJson(
+                          "http://10.0.2.2:8000/create-flutter/",
+                          jsonEncode({
+                            "title": _title,
+                            "content": _content,
+                            "thumbnail": _thumbnail,
+                            "category": _category,
+                            "is_featured": _isFeatured,
+                          }),
                         );
-                        _formKey.currentState!.reset();
-                        setState(() {
-                          // reset local state too
-                          _title = "";
-                          _content = "";
-                          _category = "update";
-                          _thumbnail = "";
-                          _isFeatured = false;
-                        });
+
+                        if (context.mounted) {
+                          if (response['status'] == 'success') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text("News successfully saved!")),
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MyHomePage()),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      "Something went wrong, please try again.")),
+                            );
+                          }
+                        }
                       }
                     },
                     child: const Text(
